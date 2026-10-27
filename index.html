@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#8e0f6f">
+<title>Asisten Dosis — Eggshell Reuse</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Asisten Dosis">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2a2030; --muted:#74697a; --line:#ece4e0; --bg:#fbf6f1; --card:#fff;
+  --brand:#a3127f; --brand2:#6d0b55; --soft:#fbe9f4;
+  --leaf:#2f9e5b; --soil:#7a5236; --sky:#2f7fc1; --sun:#f6a623;
+  --p1:#e5482f; --p2:#f07a2a; --p3:#f6a623; --p4:#f2d23c; --p5:#b8d846; --p6:#6cc24a; --p7:#2f9e5b;
+  --sh:0 1px 2px rgba(60,30,50,.06),0 6px 20px rgba(60,30,50,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font-family:inherit}
+
+/* ---------- header ---------- */
+header{position:relative;overflow:hidden;color:#fff;padding:18px 18px 26px;
+  background:radial-gradient(120% 140% at 100% 0%,#d23a9f 0%,var(--brand) 45%,var(--brand2) 100%)}
+header .wrap{max-width:780px;margin:0 auto;position:relative;z-index:1;display:flex;gap:14px;align-items:center}
+header .logo{flex:0 0 52px;height:52px;border-radius:16px;background:rgba(255,255,255,.16);display:grid;place-items:center;backdrop-filter:blur(4px)}
+header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.2px}
+header p{margin:2px 0 0;font-size:12.5px;opacity:.9}
+.badge{display:inline-block;background:#fff;color:var(--brand);font-weight:800;font-size:10.5px;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:3px;letter-spacing:.4px}
+.phbar{max-width:780px;margin:14px auto 0;position:relative;z-index:1}
+.phbar .scale{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--p1),var(--p2),var(--p3),var(--p4),var(--p5),var(--p6),var(--p7));box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.phbar .lab{display:flex;justify-content:space-between;font-size:10.5px;opacity:.85;margin-top:4px;font-weight:600}
+header svg.blob{position:absolute;right:-60px;top:-40px;opacity:.14;z-index:0}
+
+/* ---------- nav ---------- */
+nav{display:flex;gap:2px;background:#fff;position:sticky;top:0;z-index:20;box-shadow:0 1px 0 var(--line);padding:0 6px;overflow-x:auto}
+nav button{flex:1;min-width:72px;border:0;background:none;padding:9px 4px 8px;font-weight:700;font-size:12px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:12px;margin:5px 0;transition:.15s}
+nav button svg{width:22px;height:22px}
+nav button.on{color:var(--brand);background:var(--soft)}
+@media (max-width:640px){
+  nav{position:fixed;top:auto;bottom:0;left:0;right:0;box-shadow:0 -4px 18px rgba(60,30,50,.10);padding:0 4px env(safe-area-inset-bottom)}
+  main{padding-bottom:96px!important}
+  footer{padding-bottom:96px!important}
+}
+
+main{max-width:780px;margin:0 auto;padding:16px 14px 50px}
+section{display:none;animation:in .25s ease}
+section.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- step hero ---------- */
+.hero{display:flex;gap:14px;align-items:center;border-radius:20px;padding:16px;margin-bottom:12px;color:#fff;box-shadow:var(--sh);position:relative;overflow:hidden}
+.hero .ic{flex:0 0 64px;height:64px;border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+.hero .k{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.85;text-transform:uppercase}
+.hero h2{margin:1px 0 2px;font-size:19px;font-weight:800}
+.hero p{margin:0;font-size:13px;opacity:.92}
+.h-scan{background:linear-gradient(135deg,#e5482f,#f6a623)}
+.h-hitung{background:linear-gradient(135deg,#7a5236,#b07a4f)}
+.h-ingat{background:linear-gradient(135deg,#1f8f55,#4cbf7a)}
+.h-peta{background:linear-gradient(135deg,#2364a3,#3fa1d8)}
+.h-atur{background:linear-gradient(135deg,#4b3b55,#7d6a8a)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.card h3{margin:0 0 8px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.card h3 .dot{width:8px;height:8px;border-radius:50%;background:var(--brand)}
+.muted{color:var(--muted);font-size:13px}
+label{display:block;font-size:12.5px;font-weight:700;margin:12px 0 5px;color:#4a3f50}
+input[type=number],input[type=text],input[type=date],input[type=tel],select{width:100%;padding:11px 12px;border:1.5px solid #e4dbe0;border-radius:12px;font-size:15px;background:#fff;transition:.15s;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(163,18,127,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:520px){.row3{grid-template-columns:1fr 1fr}}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:14px;background:var(--brand);color:#fff;font-weight:700;font-size:14.5px;padding:12px 16px;cursor:pointer;text-decoration:none;margin:10px 8px 0 0;box-shadow:0 4px 12px rgba(163,18,127,.25);transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--soft);color:var(--brand2);box-shadow:none}
+.btn.wa{background:#1fa855;box-shadow:0 4px 12px rgba(31,168,85,.3)}
+.btn.small{padding:8px 12px;font-size:13px}
+.btn.block{width:100%;justify-content:center}
+
+/* steps list */
+.steps{display:grid;gap:8px;margin:6px 0 4px}
+.st{display:flex;gap:12px;align-items:flex-start;background:#fdf9f6;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.st .no{flex:0 0 28px;height:28px;border-radius:9px;color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}
+.st b{display:block;font-size:13.5px}
+.st span{font-size:12.5px;color:var(--muted)}
+
+/* upload zone */
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px dashed #e9c6dc;background:#fff8fc;border-radius:16px;padding:18px;text-align:center;cursor:pointer;margin-top:12px}
+.drop b{color:var(--brand2)}
+.drop input{display:none}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.tile{border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px;cursor:pointer;text-align:left;display:flex;gap:10px;align-items:center;font-weight:700;color:var(--ink);transition:.15s}
+.tile svg{flex:0 0 40px}
+.tile small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+.tile.on{border-color:var(--brand);background:var(--soft);box-shadow:0 0 0 3px rgba(163,18,127,.08)}
+.seg{display:flex;gap:6px;margin-top:4px;background:#f4eef0;border-radius:12px;padding:4px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--brand2);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* scan result: kit chart */
+.kit{display:flex;gap:16px;align-items:stretch}
+.kitchart{flex:0 0 112px;background:linear-gradient(180deg,#f7f4f8,#ece6ee);border:2px solid #d9d0dc;border-radius:14px;padding:10px 10px 10px 10px;position:relative}
+.kitchart .cap{position:absolute;left:-2px;right:-2px;top:-10px;height:14px;background:#cfc5d3;border-radius:6px 6px 2px 2px}
+.kitchart .sw{display:flex;align-items:center;gap:6px;height:24px;margin:3px 0;font-size:11px;font-weight:800;color:#5a4f60}
+.kitchart .sw i{flex:0 0 46px;height:22px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
+.kitchart .sw.hit{color:var(--ink)}
+.kitchart .sw.hit i{outline:3px solid var(--ink);outline-offset:1px}
+.kitres{flex:1;display:flex;flex-direction:column;justify-content:center}
+.phbig{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px}
+.pill{display:inline-block;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:800;color:#fff;margin-top:6px}
+canvas{max-width:100%;border-radius:12px;border:1px solid var(--line);touch-action:none;cursor:crosshair;margin-top:8px}
+.swc{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:4px 8px;margin:6px 6px 0 0;font-size:12.5px;background:#fff;font-weight:600}
+.swc i{width:18px;height:18px;border-radius:5px;display:inline-block;border:1px solid rgba(0,0,0,.12)}
+
+/* notes */
+.note{display:flex;gap:10px;border-radius:14px;padding:11px 12px;font-size:13px;margin-top:10px;line-height:1.45}
+.note svg{flex:0 0 18px;margin-top:1px}
+.note.warn{background:#fff4e8;color:#7a4510}
+.note.info{background:#f2f7fd;color:#1f4a75}
+.note.ok{background:#ecf8f0;color:#1d5e38}
+
+/* result */
+.res{border-radius:18px;padding:16px;margin-top:14px;background:linear-gradient(135deg,#fff,#fdf3f9);border:1.5px solid #f1d5e7}
+.res .top{display:flex;gap:14px;align-items:center}
+.gauge{flex:0 0 120px}
+.res .kg{font-size:40px;font-weight:800;line-height:1;letter-spacing:-1px;color:var(--brand2)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;border-left:5px solid var(--c,#a3127f)}
+.stat b{display:block;font-size:17px;font-weight:800}
+.stat span{font-size:11.5px;color:var(--muted);font-weight:600}
+
+/* timeline */
+.tl{list-style:none;padding:0;margin:14px 0 0;position:relative}
+.tl:before{content:"";position:absolute;left:17px;top:8px;bottom:8px;width:3px;background:linear-gradient(#1fa855,#bfe8cf);border-radius:3px}
+.tl li{display:flex;gap:12px;margin-bottom:12px;position:relative}
+.tl .d{flex:0 0 37px;height:37px;border-radius:50%;background:#fff;border:3px solid #1fa855;display:grid;place-items:center;font-size:16px;z-index:1}
+.tl .c{background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 12px;flex:1;box-shadow:var(--sh)}
+.tl .c small{color:#1f8f55;font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px}
+.tl .c b{display:block}
+.tl .c span{font-size:12.5px;color:var(--muted)}
+
+/* map */
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:#f7f2f4;border-radius:99px;padding:4px 10px}
+.legend i{width:10px;height:10px;border-radius:50%}
+#map{width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--line)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+.grp{border-radius:14px;padding:12px;color:#fff}
+.grp b{display:block;font-size:24px;font-weight:800;line-height:1.1}
+.grp span{font-size:12px;opacity:.95;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.ph-chip{display:inline-block;text-shadow:0 1px 1px rgba(0,0,0,.25);min-width:34px;text-align:center;border-radius:8px;padding:2px 6px;color:#fff;font-weight:800;font-size:12px}
+.tag{font-size:10.5px;font-weight:800;color:#8a7f90;background:#f1ecef;border-radius:6px;padding:1px 6px;margin-left:4px}
+
+/* settings */
+details{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-top:10px;background:#fff}
+summary{cursor:pointer;font-weight:800;padding:10px 0;list-style:none;display:flex;justify-content:space-between}
+summary::after{content:"+";color:var(--brand);font-size:18px;line-height:1}
+details[open] summary::after{content:"–"}
+details .muted{margin-bottom:10px}
+
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(10px);background:#2a2030;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;font-weight:600}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.install{display:none;max-width:780px;margin:12px auto 0;position:relative;z-index:1;background:rgba(255,255,255,.16);border-radius:14px;padding:10px 12px;align-items:center;gap:10px;font-size:12.5px}
+.install.on{display:flex}
+.install b{display:block;font-size:13.5px}
+.install button{margin-left:auto;border:0;background:#fff;color:#8e0f6f;font-weight:800;border-radius:10px;padding:9px 12px;cursor:pointer;white-space:nowrap}
+.install .x{background:transparent;color:#fff;margin-left:0;padding:6px;font-size:16px}
+.netdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7CFC9A;margin-right:5px;vertical-align:1px}
+.netdot.off{background:#ffb36b}
+footer{max-width:780px;margin:0 auto;padding:0 14px 30px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <svg class="blob" width="260" height="260" viewBox="0 0 200 200"><path fill="#fff" d="M100 10c35 0 60 40 70 75s-10 85-55 95S20 160 15 120 65 10 100 10z"/></svg>
+  <div class="wrap">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 40 40"><path d="M20 4c7 0 13 11 13 20a13 13 0 0 1-26 0C7 15 13 4 20 4z" fill="#fff"/><path d="M9 24l5-3 4 4 5-5 4 3 4-2" stroke="#a3127f" stroke-width="2.4" fill="none" stroke-linejoin="round"/><path d="M8 27c3 2 7 4 12 4s9-2 12-4" fill="#f6d9ea"/></svg>
+    </div>
+    <div>
+      <h1>Asisten Dosis <span class="badge">PROTOTIPE</span></h1>
+      <p>Eggshell Reuse · ECOVERA Team — kapur cangkang telur untuk bedengan & kolam di gambut</p><p id="net" style="margin-top:4px"><span class="netdot"></span>Online</p>
+    </div>
+  </div>
+  <div class="install" id="install"><div><b>Pasang di HP</b><span id="installTxt">Buka seperti aplikasi, bisa dipakai tanpa sinyal.</span></div><button id="installBtn">Pasang aplikasi</button><button class="x" id="installX" aria-label="Tutup">✕</button></div>
+  <div class="phbar"><div class="scale"></div><div class="lab"><span>pH 3,5 sangat masam</span><span>5,5</span><span>netral 7</span></div></div>
+</header>
+
+<nav id="tabs">
+  <button data-t="scan" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="9" y="6" width="6" height="12" rx="1.5"/><path d="M9 10h6M9 14h6"/></svg>Scan</button>
+  <button data-t="hitung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Hitung</button>
+  <button data-t="ingatkan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Ingatkan</button>
+  <button data-t="petakan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Petakan</button>
+  <button data-t="atur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Kalibrasi</button>
+</nav>
+
+<main>
+<!-- ============ 1 SCAN ============ -->
+<section id="scan" class="on">
+  <div class="hero h-scan">
+    <div class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="15" y="3" width="10" height="34" rx="3" fill="#fff"/><rect x="16.5" y="7" width="7" height="6" rx="1.5" fill="#e5482f"/><rect x="16.5" y="15" width="7" height="6" rx="1.5" fill="#f6a623"/><rect x="16.5" y="23" width="7" height="6" rx="1.5" fill="#6cc24a"/></svg></div>
+    <div><div class="k">Langkah 1</div><h2>Scan strip pH</h2><p>Foto strip yang sudah dicelup, aplikasi membaca warnanya.</p></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="dot"></span>Cara mengambil contoh</h3>
+    <div class="steps">
+      <div class="st"><div class="no" style="background:var(--soil)">1</div><div><b>Campur tanah dan air 1 : 2,5</b><span>Aduk, diamkan sampai mengendap. Kolam: ambil lumpur dasar dengan cara sama.</span></div></div>
+      <div class="st"><div class="no" style="background:var(--sky)">2</div><div><b>Celup strip 1–2 detik</b><span>Di cairan bening bagian atas, jangan di lumpur.</span></div></div>
+      <div class="st"><div class="no" style="background:var(--leaf)">3</div><div><b>Foto di tempat teduh</b><span>Strip diletakkan di samping kartu warna kemasan.</span></div></div>
+    </div>
+    <label class="drop" for="file">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#a3127f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <b>Ambil / pilih foto strip</b><span class="muted">Kamera HP terbuka otomatis</span>
+      <input type="file" id="file" accept="image/*" capture="environment">
+    </label>
+    <div class="muted" style="margin-top:8px;text-align:center">Tidak punya foto? <a href="#" id="demoImg" style="color:var(--brand);font-weight:700">Pakai foto contoh</a></div>
+  </div>
+
+  <div class="card" id="pickCard" style="display:none">
+    <h3><span class="dot"></span>Ketuk bagian foto</h3>
+    <div class="seg" id="pickMode"><button data-m="pad" class="on">Bantalan strip</button><button data-m="ref">Kotak kartu warna</button></div>
+    <div class="muted" id="pickHint" style="margin:8px 0 0">Ketuk bantalan warna pada strip yang sudah dicelup.</div>
+    <canvas id="cv"></canvas>
+    <div id="padOut"></div><div id="refOut"></div>
+    <div id="refAsk" style="display:none" class="note info"><div style="flex:1">Kotak ini menunjukkan pH berapa?
+      <div class="row" style="margin-top:8px"><input type="number" id="refVal" step="0.5" min="1" max="14" placeholder="mis. 5"><button class="btn small" id="refSave" style="margin:0">Simpan</button></div></div></div>
+    <button class="btn ghost small" id="refClear">Hapus kalibrasi foto ini</button>
+  </div>
+
+  <div class="card">
+    <h3><span class="dot"></span>Hasil pembacaan</h3>
+    <div class="kit">
+      <div class="kitchart" id="kitchart"><div class="cap"></div></div>
+      <div class="kitres" id="scanRes"><div class="phbig" style="color:#c9bfcc">–,–</div><div class="muted" style="margin-top:6px">Belum ada pembacaan. Ambil foto atau isi pH manual.</div></div>
+    </div>
+    <label for="phManual">pH yang dipakai (bisa diubah manual)</label>
+    <input type="number" id="phManual" step="0.1" min="2" max="9" placeholder="mis. 4.2">
+    <button class="btn block" id="toHitung">Lanjut hitung takaran →</button>
+    <div class="note warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg><div><b>Batas akurasi ±0,5 pH.</b> Air gambut cokelat dapat mewarnai strip. Untuk dosis besar, cocokkan dengan pH meter penyuluh atau lab.</div></div>
+  </div>
+</section>
+
+<!-- ============ 2 HITUNG ============ -->
+<section id="hitung">
+  <div class="hero h-hitung">
+    <div class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M8 30h24l-3-14H11z" fill="#fff"/><path d="M14 16c0-4 3-7 6-7s6 3 6 7" stroke="#fff" stroke-width="3" fill="none"/><text x="20" y="27" text-anchor="middle" font-size="9" font-weight="800" fill="#7a5236">kg</text></svg></div>
+    <div><div class="k">Langkah 2</div><h2>Hitung takaran</h2><p>Dari pH dan luas lahan menjadi kilogram dan jumlah kemasan.</p></div>
+  </div>
+  <div class="card">
+    <h3><span class="dot"></span>Untuk lahan apa?</h3>
+    <div class="tiles" id="mode">
+      <button class="tile on" data-m="bedeng"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="3" y="24" width="34" height="10" rx="3" fill="#a77a55"/><path d="M10 24c0-6 2-9 2-9s2 3 2 9M20 24c0-8 2-11 2-11s2 3 2 11M30 24c0-6 2-9 2-9s2 3 2 9" stroke="#2f9e5b" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span>Bedengan sayur<small>Tanah gambut</small></span></button>
+      <button class="tile" data-m="kolam"><svg width="40" height="40" viewBox="0 0 40 40"><ellipse cx="20" cy="26" rx="17" ry="9" fill="#3fa1d8"/><path d="M13 25c3-3 7-3 10 0-3 3-7 3-10 0zM23 25l4-3v6z" fill="#fff"/></svg><span>Kolam ikan<small>Patin, nila, lele</small></span></button>
+    </div>
+
+    <div id="fBedeng">
+      <div class="row3">
+        <div><label>Panjang bedengan (m)</label><input type="number" id="bP" value="10" min="0" step="0.5"></div>
+        <div><label>Lebar (m)</label><input type="number" id="bL" value="1.2" min="0" step="0.1"></div>
+        <div><label>Jumlah bedengan</label><input type="number" id="bN" value="10" min="1" step="1"></div>
+      </div>
+      <div class="row">
+        <div><label>pH tanah sekarang</label><input type="number" id="bPh" value="4.0" step="0.1" min="2" max="8"></div>
+        <div><label>Target pH</label><select id="bTarget"><option value="5">5,0</option><option value="5.5" selected>5,5</option><option value="6">6,0</option></select></div>
+      </div>
+    </div>
+    <div id="fKolam" style="display:none">
+      <div class="row">
+        <div><label>Panjang kolam (m)</label><input type="number" id="kP" value="10" min="0" step="0.5"></div>
+        <div><label>Lebar kolam (m)</label><input type="number" id="kL" value="8" min="0" step="0.5"></div>
+      </div>
+      <div class="row">
+        <div><label>pH tanah dasar kolam</label><input type="number" id="kPh" value="4.5" step="0.1" min="2" max="9"></div>
+        <div><label>Alkalinitas (mg/L, opsional)</label><input type="number" id="kAlk" placeholder="jika tahu" min="0"></div>
+      </div>
+      <label>Dasar kolam</label>
+      <div class="seg" id="kDasar"><button data-d="mineral" class="on">Tanah mineral</button><button data-d="gambut">Gambut</button></div>
+    </div>
+    <button class="btn block" id="calc">Hitung takaran</button>
+    <div id="out"></div>
+  </div>
+</section>
+
+<!-- ============ 3 INGATKAN ============ -->
+<section id="ingatkan">
+  <div class="hero h-ingat">
+    <div class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M20 5a14 14 0 0 0-12 21l-2 8 8-2A14 14 0 1 0 20 5z" fill="#fff"/><path d="M15 15c0 6 4 10 10 10l2-3-3-2-2 1c-2-1-3-2-4-4l1-2-2-3z" fill="#1f8f55"/></svg></div>
+    <div><div class="k">Langkah 3</div><h2>Jadwal & pengingat</h2><p>Kapan tabur, kapan uji ulang, kapan pesan lagi.</p></div>
+  </div>
+  <div class="card">
+    <div class="row">
+      <div><label>Nama petani / pembudidaya</label><input type="text" id="nm" placeholder="mis. Pak Darman"></div>
+      <div><label>No. WhatsApp (62…)</label><input type="tel" id="wa" placeholder="6281234567890"></div>
+    </div>
+    <div class="row">
+      <div><label>Tanggal tabur</label><input type="date" id="tgl"></div>
+      <div><label>Lama musim / siklus (hari)</label><input type="number" id="musim" value="90" min="20"></div>
+    </div>
+    <button class="btn block" id="mkJadwal" style="background:#1f8f55;box-shadow:0 4px 12px rgba(31,143,85,.3)">Buat jadwal</button>
+    <div id="jadwal"></div>
+    <div class="note info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/></svg><div>Prototipe mengirim pesan WhatsApp dengan satu ketukan. Pengiriman otomatis penuh memerlukan WhatsApp Business Platform (berbayar per percakapan).</div></div>
+  </div>
+</section>
+
+<!-- ============ 4 PETAKAN ============ -->
+<section id="petakan">
+  <div class="hero h-peta">
+    <div class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M5 9l10-4 10 4 10-4v26l-10 4-10-4-10 4z" fill="#fff"/><circle cx="14" cy="16" r="3" fill="#e5482f"/><circle cx="25" cy="22" r="3" fill="#f6a623"/><circle cx="18" cy="27" r="3" fill="#2f9e5b"/></svg></div>
+    <div><div class="k">Langkah 4</div><h2>Peta pH penyuluh</h2><p>Semua hasil uji terkumpul per kelompok tani.</p></div>
+  </div>
+  <div class="card">
+    <h3><span class="dot"></span>Simpan hasil uji</h3>
+    <div class="row">
+      <div><label>Nama lahan / kolam</label><input type="text" id="pNama" placeholder="mis. Bedengan Pak Darman"></div>
+      <div><label>Kelompok / desa</label><input type="text" id="pKel" placeholder="mis. KT Maju Bersama"></div>
+    </div>
+    <div class="row3">
+      <div><label>Lintang</label><input type="number" id="pLat" step="0.0001" placeholder="-2.54"></div>
+      <div><label>Bujur</label><input type="number" id="pLon" step="0.0001" placeholder="112.95"></div>
+      <div><label>pH</label><input type="number" id="pPh" step="0.1"></div>
+    </div>
+    <button class="btn ghost small" id="pGps">📍 Ambil lokasi saya (GPS)</button>
+    <label>Jenis</label>
+    <div class="seg" id="pJenis"><button data-j="Bedengan" class="on">Bedengan</button><button data-j="Kolam">Kolam</button></div>
+    <button class="btn" id="pSave">Simpan titik</button><button class="btn ghost" id="pDemo">Isi data contoh</button><button class="btn ghost" id="pClear">Hapus semua</button>
+    <div class="muted" style="margin-top:8px">Tekan "Ambil lokasi saya" saat berdiri di lahan, atau isi koordinat manual.</div>
+  </div>
+  <div class="card">
+    <div class="legend">
+      <span><i style="background:var(--p1)"></i>&lt; 4,0</span><span><i style="background:var(--p2)"></i>4,0–4,9</span><span><i style="background:var(--p4)"></i>5,0–5,4</span><span><i style="background:var(--p7)"></i>≥ 5,5</span>
+      <span>● bedengan</span><span>■ kolam</span>
+    </div>
+    <svg id="map" viewBox="0 0 600 380"></svg>
+    <div id="mapNote" class="muted" style="margin-top:6px"></div>
+    <div id="sum"></div>
+    <h3 style="margin-top:16px"><span class="dot"></span>Semua titik</h3>
+    <div id="tbl" style="overflow-x:auto"></div>
+    <button class="btn ghost small" id="copyCsv">Salin CSV</button><button class="btn ghost small" id="copyRep">Salin ringkasan untuk penyuluh</button>
+  </div>
+</section>
+
+<!-- ============ KALIBRASI ============ -->
+<section id="atur">
+  <div class="hero h-atur">
+    <div class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M14 6h12M17 6v10l-8 14a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-8-14V6" stroke="#fff" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M12 27h16l3 5H9z" fill="#fff"/></svg></div>
+    <div><div class="k">Pengaturan</div><h2>Kalibrasi model</h2><p>Ganti angka literatur dengan hasil lab dan demplot tim.</p></div>
+  </div>
+  <div class="card">
+    <div class="note info" style="margin-top:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/></svg><div>Semua angka di sini adalah asumsi awal dari literatur. Inilah maksud BMC: "Kalibrasi Asisten Dosis dengan data demplot".</div></div>
+    <details open><summary>Bedengan gambut</summary>
+      <div class="row">
+        <div><label>Dosis per kenaikan 1 pH (t/ha)</label><input type="number" id="cK" step="0.1"></div>
+        <div><label>Maks. per aplikasi (t/ha)</label><input type="number" id="cMax" step="0.5"></div>
+      </div>
+      <div class="muted">Acuan: Sukardi dkk. (2024), gambut Pontianak, pH 3,72; dosis 3, 5, 6 t/ha untuk target pH 5; 5,5; 6 → ±2,6 t/ha per unit pH.</div>
+    </details>
+    <details><summary>Mutu batch kapur</summary>
+      <div class="row">
+        <div><label>Daya netralisasi batch (%)</label><input type="number" id="cDN" step="0.1"></div>
+        <div><label>Daya netralisasi acuan (%)</label><input type="number" id="cDNref" step="0.1"></div>
+      </div>
+      <div class="muted">Acuan 46,86% (Sukardi dkk. 2024). Iowa State: CCE 74%, kadar air 16%. Batch lebih kuat → takaran turun otomatis.</div>
+    </details>
+    <details><summary>Kolam (setara CaCO₃)</summary>
+      <div class="row3">
+        <div><label>pH 6,0–6,9</label><input type="number" id="cK1" step="100"></div>
+        <div><label>pH 5,0–5,9</label><input type="number" id="cK2" step="100"></div>
+        <div><label>pH &lt; 5,0</label><input type="number" id="cK3" step="100"></div>
+      </div>
+      <div class="muted">kg/ha. Boyd: umumnya 1.000–5.000 kg/ha; tak bermanfaat bila pH &gt; 7 atau alkalinitas &gt; 50 mg/L. Pembagian tiga pita adalah asumsi prototipe.</div>
+    </details>
+    <details><summary>Harga & kemasan</summary>
+      <div class="row3">
+        <div><label>Harga (Rp/kg)</label><input type="number" id="cHarga" step="100"></div>
+        <div><label>Isi sak (kg)</label><input type="number" id="cSak" step="1"></div>
+        <div><label>Inkubasi (hari)</label><input type="number" id="cInk" step="1"></div>
+      </div>
+    </details>
+    <button class="btn" id="cSave">Simpan kalibrasi</button><button class="btn ghost" id="cReset">Kembalikan ke acuan</button>
+  </div>
+</section>
+</main>
+<footer>Prototipe untuk lomba. Takaran adalah perkiraan awal berbasis literatur dan wajib divalidasi dengan uji lab & demplot. Data tersimpan hanya di perangkat ini. Versi aplikasi 1.0.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const fmt=(n,d=0)=>Number(n).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const rp=n=>'Rp'+fmt(Math.round(n));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1900);}
+const store={get(k,d){try{const v=localStorage.getItem('eggshell_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('eggshell_'+k,JSON.stringify(v))}catch(e){}}};
+const ICON={warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/></svg>',ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>'};
+const note=(t,h)=>`<div class="note ${t}">${ICON[t]}<div>${h}</div></div>`;
+
+/* pH colour scale (app-wide) */
+const SCALE=[[3.5,'#e5482f'],[4,'#f07a2a'],[4.5,'#f6a623'],[5,'#f2d23c'],[5.5,'#b8d846'],[6,'#6cc24a'],[7,'#2f9e5b']];
+function phColor(p){if(p<=SCALE[0][0])return SCALE[0][1];for(let i=1;i<SCALE.length;i++)if(p<=SCALE[i][0])return SCALE[i][1];return SCALE[SCALE.length-1][1];}
+function phLabel(p){return p<4?'Sangat masam':p<5?'Masam':p<5.5?'Agak masam':p<6.5?'Cukup baik':'Mendekati netral';}
+const cls=p=>p<4?'var(--p1)':p<5?'var(--p2)':p<5.5?'var(--p4)':'var(--p7)';
+
+/* tabs */
+function show(t){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id===t));window.scrollTo({top:0,behavior:'smooth'});if(t==='petakan')drawMap();}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
+
+/* calibration */
+const DEF={k:2.6,max:6,dn:46.86,dnRef:46.86,k1:1000,k2:3000,k3:5000,harga:3500,sak:25,ink:14};
+let P=Object.assign({},DEF,store.get('cal',{}));
+const calMap={cK:'k',cMax:'max',cDN:'dn',cDNref:'dnRef',cK1:'k1',cK2:'k2',cK3:'k3',cHarga:'harga',cSak:'sak',cInk:'ink'};
+function fillCal(){for(const id in calMap)$('#'+id).value=P[calMap[id]];}
+fillCal();
+$('#cSave').onclick=()=>{for(const id in calMap){const v=parseFloat($('#'+id).value);if(!isNaN(v)&&v>0)P[calMap[id]]=v;}store.set('cal',P);toast('Kalibrasi disimpan');};
+$('#cReset').onclick=()=>{P=Object.assign({},DEF);store.set('cal',P);fillCal();toast('Kembali ke nilai acuan');};
+
+/* colour science */
+function srgb2lin(c){c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);}
+function rgb2lab(r,g,b){const R=srgb2lin(r),G=srgb2lin(g),B=srgb2lin(b);
+  let x=(R*0.4124+G*0.3576+B*0.1805)/0.95047,y=(R*0.2126+G*0.7152+B*0.0722),z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;
+  const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);x=f(x);y=f(y);z=f(z);return[116*y-16,500*(x-y),200*(y-z)];}
+function dE(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);}
+const BUILTIN=[[3,[226,72,52]],[4,[238,132,44]],[5,[242,186,46]],[6,[214,206,58]],[7,[118,176,72]],[8,[46,146,120]],[9,[44,92,158]]];
+function estimate(rgb,refs){const lab=rgb2lab(...rgb);
+  const list=refs.map(r=>({ph:r[0],d:dE(lab,rgb2lab(...r[1]))})).sort((a,b)=>a.d-b.d);
+  if(list.length<2)return{ph:list[0].ph,d:list[0].d};
+  const a=list[0],b=list[1];let ph=a.ph;
+  if(Math.abs(a.ph-b.ph)<=1.01){const w=a.d/(a.d+b.d||1);ph=a.ph+(b.ph-a.ph)*w;}
+  return{ph:Math.round(ph*10)/10,d:a.d};}
+
+/* kit chart (test-kit style) */
+function drawKit(ph){const rows=[7,6.5,6,5.5,5,4.5,4];
+  $('#kitchart').innerHTML='<div class="cap"></div>'+rows.map(r=>{const hit=ph!=null&&Math.abs(ph-r)<0.25;return`<div class="sw${hit?' hit':''}"><i style="background:${phColor(r)}"></i>${fmt(r,1)}${hit?' ◀':''}</div>`;}).join('');}
+drawKit(null);
+function showPH(ph,extra){const c=phColor(ph);
+  $('#scanRes').innerHTML=`<div class="phbig" style="color:${c}">${fmt(ph,1)}</div><div><span class="pill" style="background:${c}">${phLabel(ph)}</span></div>${extra||''}`;drawKit(ph);}
+$('#phManual').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v))showPH(v,'<div class="muted" style="margin-top:6px">Diisi manual.</div>');});
+
+/* scan */
+const cv=$('#cv'),cx=cv.getContext('2d',{willReadFrequently:true});
+let pickMode='pad',padRGB=null,refs=[],pendingRef=null;
+$$('#pickMode button').forEach(b=>b.onclick=()=>{pickMode=b.dataset.m;$$('#pickMode button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#pickHint').textContent=pickMode==='pad'?'Ketuk bantalan warna pada strip yang sudah dicelup.':'Ketuk satu kotak di kartu warna kemasan, lalu isi angka pH-nya. Ulangi minimal 2–3 kotak.';});
+function loadImage(src){const img=new Image();img.onload=()=>{const W=Math.min(1000,img.width),s=W/img.width;cv.width=W;cv.height=Math.round(img.height*s);cx.drawImage(img,0,0,cv.width,cv.height);$('#pickCard').style.display='block';padRGB=null;refs=[];renderRefs();$('#padOut').innerHTML='';$('#pickCard').scrollIntoView({behavior:'smooth'});};img.src=src;}
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>loadImage(rd.result);rd.readAsDataURL(f);};
+$('#demoImg').onclick=e=>{e.preventDefault();
+  const c=document.createElement('canvas');c.width=900;c.height=520;const g=c.getContext('2d');
+  g.fillStyle='#d9d2c4';g.fillRect(0,0,900,520);
+  g.fillStyle='#fff';g.fillRect(60,60,780,150);g.fillStyle='#333';g.font='bold 22px sans-serif';g.fillText('KARTU WARNA pH (contoh)',80,92);
+  BUILTIN.forEach(([ph,rgb],i)=>{g.fillStyle=`rgb(${rgb})`;g.fillRect(80+i*108,110,90,70);g.fillStyle='#222';g.font='bold 20px sans-serif';g.fillText(ph,118+i*108,202);});
+  g.fillStyle='#f4f1ea';g.fillRect(250,300,420,46);g.fillStyle='rgb(240,150,45)';g.fillRect(560,302,60,42);
+  g.fillStyle='#333';g.font='16px sans-serif';g.fillText('strip setelah dicelup →',330,330);
+  loadImage(c.toDataURL());toast('Foto contoh dimuat: ketuk kotak oranye pada strip');};
+function sample(x,y){const r=6,d=cx.getImageData(Math.max(0,x-r),Math.max(0,y-r),r*2,r*2).data;let R=0,G=0,B=0,n=0;for(let i=0;i<d.length;i+=4){R+=d[i];G+=d[i+1];B+=d[i+2];n++;}return[R/n,G/n,B/n].map(Math.round);}
+function marker(x,y,col){cx.save();cx.strokeStyle=col;cx.lineWidth=3;cx.beginPath();cx.arc(x,y,11,0,7);cx.stroke();cx.restore();}
+cv.addEventListener('pointerdown',e=>{const rc=cv.getBoundingClientRect(),x=(e.clientX-rc.left)*cv.width/rc.width,y=(e.clientY-rc.top)*cv.height/rc.height;const rgb=sample(x,y);
+  if(pickMode==='pad'){padRGB=rgb;marker(x,y,'#fff');marker(x,y,'#a3127f');$('#padOut').innerHTML=`<span class="swc"><i style="background:rgb(${rgb})"></i>Warna strip</span>`;readPH();}
+  else{pendingRef=rgb;marker(x,y,'#222');$('#refAsk').style.display='flex';$('#refVal').focus();}});
+$('#refSave').onclick=()=>{const v=parseFloat($('#refVal').value);if(isNaN(v)||!pendingRef)return;refs.push([v,pendingRef]);pendingRef=null;$('#refVal').value='';$('#refAsk').style.display='none';renderRefs();readPH();};
+$('#refClear').onclick=()=>{refs=[];renderRefs();readPH();};
+function renderRefs(){$('#refOut').innerHTML=refs.length?refs.map(r=>`<span class="swc"><i style="background:rgb(${r[1]})"></i>pH ${r[0]}</span>`).join(''):'';}
+function readPH(){if(!padRGB)return;
+  const useRefs=refs.length>=2?refs:BUILTIN, mode=refs.length>=2?'kartu warna di foto ini':'warna bawaan (kasar)';
+  const r=estimate(padRGB,useRefs);const conf=r.d<12?'tinggi':r.d<25?'sedang':'rendah';
+  showPH(r.ph,`<div class="muted" style="margin-top:8px">Dibandingkan dengan ${mode}. Kecocokan: <b>${conf}</b></div>`);
+  $('#phManual').value=r.ph;
+  let extra='';if(refs.length<2)extra+=note('info','Pilih "Kotak kartu warna" dan ketuk minimal 2 kotak agar hasil sesuai merek strip dan cahaya foto.');
+  if(conf==='rendah')extra+=note('warn','Warna strip jauh dari semua acuan. Ulangi foto atau periksa apakah strip terwarnai air gambut.');
+  $('#padOut').insertAdjacentHTML('beforeend',extra);}
+$('#toHitung').onclick=()=>{const v=parseFloat($('#phManual').value);if(!isNaN(v)){$('#bPh').value=v;$('#kPh').value=v;$('#pPh').value=v;}show('hitung');};
+
+/* gauge svg: pH now -> target on 3.5..7 arc */
+function gauge(now,tgt){const a0=Math.PI,a1=0,pos=v=>a0+(Math.min(7,Math.max(3.5,v))-3.5)/3.5*(a1-a0);
+  const R=48,cx0=60,cy0=58,pt=a=>[cx0+R*Math.cos(a),cy0-R*Math.sin(a)];
+  let seg='';const n=7;for(let i=0;i<n;i++){const s=a0+(a1-a0)*i/n,e=a0+(a1-a0)*(i+1)/n,[x1,y1]=pt(s),[x2,y2]=pt(e);seg+=`<path d="M${x1} ${y1} A${R} ${R} 0 0 1 ${x2} ${y2}" stroke="${SCALE[i][1]}" stroke-width="12" fill="none"/>`;}
+  const [nx,ny]=pt(pos(now)),[tx,ty]=pt(pos(tgt));
+  return`<svg class="gauge" viewBox="0 0 120 78">${seg}<line x1="${cx0}" y1="${cy0}" x2="${nx}" y2="${ny}" stroke="#2a2030" stroke-width="3.5" stroke-linecap="round"/><circle cx="${cx0}" cy="${cy0}" r="5" fill="#2a2030"/>${tgt?`<circle cx="${tx}" cy="${ty}" r="6" fill="#fff" stroke="#2a2030" stroke-width="2.5"/>`:''}<text x="60" y="76" text-anchor="middle" font-size="9.5" font-weight="700" fill="#74697a">pH ${fmt(now,1)}${tgt?' → '+fmt(tgt,1):''}</text></svg>`;}
+
+/* hitung */
+let mode='bedeng',dasar='mineral',last=null;
+$$('#mode .tile').forEach(b=>b.onclick=()=>{mode=b.dataset.m;$$('#mode .tile').forEach(x=>x.classList.toggle('on',x===b));$('#fBedeng').style.display=mode==='bedeng'?'':'none';$('#fKolam').style.display=mode==='kolam'?'':'none';$('#out').innerHTML='';$('#musim').value=mode==='bedeng'?90:120;});
+$$('#kDasar button').forEach(b=>b.onclick=()=>{dasar=b.dataset.d;$$('#kDasar button').forEach(x=>x.classList.toggle('on',x===b));});
+function packs(kg){const sak=Math.floor(kg/P.sak),sisa=kg-sak*P.sak;const kemasan=Math.ceil(sisa);return{sak,kemasan,text:(sak?`${sak} sak ${P.sak} kg`:'')+(sak&&kemasan?' + ':'')+(kemasan?`${kemasan} × 1 kg`:'')||'0'};}
+$('#calc').onclick=()=>{
+  const f=P.dnRef/P.dn;let kg=0,area=0,ph,tgt=null,notes=[],rounds=1,perRound=0,label,rate;
+  if(mode==='bedeng'){
+    area=(+$('#bP').value)*(+$('#bL').value)*(+$('#bN').value);ph=+$('#bPh').value;tgt=+$('#bTarget').value;label='Bedengan sayur · gambut';
+    if(!(area>0)){$('#out').innerHTML=note('warn','Isi ukuran bedengan.');return;}
+    if(ph>=tgt){last={mode,area,ph,kg:0,label};$('#out').innerHTML=`<div class="res"><div class="top">${gauge(ph,tgt)}<div><div class="kg" style="color:var(--leaf)">Tidak perlu kapur</div><div class="muted">pH ${fmt(ph,1)} sudah ≥ target ${fmt(tgt,1)}. Uji ulang musim depan.</div></div></div></div>`;return;}
+    let tha=P.k*(tgt-ph)*f;rounds=Math.ceil(tha/(P.max*f));perRound=tha/rounds;kg=tha*1000*area/10000;rate=`${fmt(tha,1)} t/ha`;
+    if(rounds>1)notes.push(['warn',`Takaran ${fmt(tha,1)} t/ha melebihi batas ${fmt(P.max*f,1)} t/ha per tabur. Bagi menjadi <b>${rounds} kali tabur</b> (±${fmt(perRound,1)} t/ha) dengan uji ulang di antaranya.`]);
+    if(ph<4)notes.push(['warn','pH di bawah 4: di gambut Kalteng (Anastashia dkk. 2024), 5 t/ha cangkang telur menaikkan pH 3,21 → 3,63 setelah inkubasi dan 4,8 setelah panen. Kenaikan bertahap; kombinasikan dengan pupuk kandang.']);
+    notes.push(['info','Cangkang telur hampir tanpa magnesium. Jika tanaman kurang Mg, dolomit tetap diperlukan sebagian.']);
+  } else {
+    area=(+$('#kP').value)*(+$('#kL').value);ph=+$('#kPh').value;const alk=parseFloat($('#kAlk').value);label='Kolam ikan · dasar '+dasar;tgt=7;
+    if(!(area>0)){$('#out').innerHTML=note('warn','Isi ukuran kolam.');return;}
+    if(ph>=7||(!isNaN(alk)&&alk>=50)){last={mode,area,ph,kg:0,label};$('#out').innerHTML=`<div class="res"><div class="top">${gauge(ph,null)}<div><div class="kg" style="color:var(--leaf);font-size:26px">Pengapuran kemungkinan tidak bermanfaat</div><div class="muted">pH tanah dasar ≥ 7 atau alkalinitas ≥ 50 mg/L (Boyd).</div></div></div></div>`;return;}
+    const caco3=ph>=6?P.k1:ph>=5?P.k2:P.k3;const kgha=caco3/(P.dn/100);kg=kgha*area/10000;rate=`${fmt(kgha)} kg/ha`;
+    notes.push(['info',`Pita awal ${fmt(caco3)} kg/ha setara CaCO₃ ÷ daya netralisasi ${fmt(P.dn,1)}% = ${fmt(kgha)} kg/ha serbuk.`]);
+    notes.push(['ok','Tabur merata di dasar kolam yang sudah dikeringkan, aduk, isi air, tunggu ±3 hari sebelum tebar benih.']);
+    if(dasar==='gambut')notes.push(['warn','<b>Dasar gambut:</b> penelitian kolam gambut di Sumsel memakai 7.000–13.000 kg/ha setara CaO. Kebutuhan bisa jauh lebih tinggi; uji kebutuhan kapur di lab dulu.']);
+    if(isNaN(alk))notes.push(['info','Ukur alkalinitas air (strip KH murah) agar keputusan lebih tepat.']);
+  }
+  kg=Math.ceil(kg*10)/10;const pk=packs(kg);
+  last={mode,area,ph,kg,label,rounds,pk};store.set('last',last);
+  $('#out').innerHTML=`<div class="res"><div class="top">${gauge(ph,mode==='bedeng'?tgt:null)}<div><div class="muted" style="font-weight:700">${label} · ${fmt(area,1)} m²</div><div class="kg">${fmt(kg,1)} kg</div><div class="muted">kapur cangkang telur${rounds>1?`, dibagi ${rounds} kali tabur`:''}</div></div></div>
+   <div class="stats"><div class="stat" style="--c:var(--soil)"><b>${pk.text}</b><span>kemasan</span></div><div class="stat" style="--c:var(--brand)"><b>${rp(kg*P.harga)}</b><span>perkiraan biaya</span></div><div class="stat" style="--c:var(--sun)"><b>${rate}</b><span>takaran setara</span></div><div class="stat" style="--c:var(--sky)"><b>${fmt(kg/Math.max(area,1)*1000,0)} g/m²</b><span>untuk ditimbang</span></div></div></div>`+
+   notes.map(n=>note(n[0],n[1])).join('')+`<button class="btn" id="goJ" style="background:#1f8f55">Buat jadwal →</button><button class="btn ghost" id="goMap">Simpan ke peta</button>`;
+  $('#goJ').onclick=()=>show('ingatkan');
+  $('#goMap').onclick=()=>{$('#pPh').value=ph;$('#pJenis button[data-j="'+(mode==='bedeng'?'Bedengan':'Kolam')+'"]').click();show('petakan');};
+  $('#out').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+/* ingatkan */
+$('#tgl').value=new Date().toISOString().slice(0,10);
+function addDays(s,n){const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return d;}
+const dfmt=d=>d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+$('#mkJadwal').onclick=()=>{const L=last||store.get('last',null);
+  if(!L||!L.kg){$('#jadwal').innerHTML=note('warn','Hitung takaran dulu di langkah 2.');return;}
+  const t0=$('#tgl').value,nm=$('#nm').value||'Bapak/Ibu',musim=+$('#musim').value||90,ink=P.ink;
+  const ev=[[0,'🧺','Tabur kapur',`Tabur ${fmt(L.kg,1)} kg (${L.pk.text}) merata, aduk ke tanah 0–20 cm.`]];
+  if(L.mode==='bedeng'){ev.push([ink,'🧪','Uji pH ulang','Celup strip, foto lewat Asisten Dosis. Bila pH naik, bedengan siap tanam.']);if(L.rounds>1)ev.push([ink+1,'🧺','Tabur tahap 2','Jika pH belum mencapai target, tabur tahap berikutnya.']);}
+  else{ev.push([1,'💧','Isi air kolam','Isi air setelah kapur tercampur.']);ev.push([4,'🐟','Cek pH air & tebar benih','Tebar benih bila pH stabil.']);}
+  ev.push([musim-7,'🔁','Pesan ulang','Siapkan kapur musim/siklus berikutnya; uji pH dulu.']);
+  const msg=`Halo ${nm}, ini jadwal dari Eggshell Reuse:\n`+ev.map(([d,,a,b])=>`• ${dfmt(addDays(t0,d))}: ${a}. ${b}`).join('\n')+`\nBalas PESAN untuk memesan ulang.`;
+  const wa=($('#wa').value||'').replace(/\D/g,'');const link='https://wa.me/'+wa+'?text='+encodeURIComponent(msg);
+  $('#jadwal').innerHTML=`<ul class="tl">${ev.map(([d,i,a,b])=>`<li><div class="d">${i}</div><div class="c"><small>${dfmt(addDays(t0,d))}</small><b>${a}</b><span>${b}</span></div></li>`).join('')}</ul>
+   <a class="btn wa block" href="${link}" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2z"/></svg>Kirim lewat WhatsApp</a>
+   <button class="btn ghost block" id="cpMsg">Salin pesan</button><div class="muted" style="margin-top:6px;text-align:center">${wa?'Membuka WhatsApp ke '+wa:'Nomor belum diisi: WhatsApp akan meminta Anda memilih kontak.'}</div>`;
+  $('#cpMsg').onclick=()=>copy(msg);};
+
+/* petakan */
+let pts=store.get('pts',[]),jenis='Bedengan';
+$$('#pJenis button').forEach(b=>b.onclick=()=>{jenis=b.dataset.j;$$('#pJenis button').forEach(x=>x.classList.toggle('on',x===b));});
+$('#pSave').onclick=()=>{const lat=parseFloat($('#pLat').value),lon=parseFloat($('#pLon').value),ph=parseFloat($('#pPh').value);
+  if([lat,lon,ph].some(isNaN)){toast('Isi lintang, bujur, dan pH');return;}
+  pts.push({nama:$('#pNama').value||'(tanpa nama)',kel:$('#pKel').value||'-',lat,lon,ph,jenis,tgl:new Date().toISOString().slice(0,10),contoh:false});store.set('pts',pts);drawMap();toast('Titik disimpan');};
+$('#pDemo').onclick=()=>{let s=7;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280;};const kel=['KT Contoh A','KT Contoh B','Pokdakan Contoh'];
+  for(let i=0;i<18;i++){const k=kel[i%3];const base=k==='KT Contoh A'?[-2.585,112.93]:k==='KT Contoh B'?[-2.50,112.99]:[-2.55,113.03];
+    pts.push({nama:(k.startsWith('Pok')?'Kolam ':'Bedengan ')+(i+1),kel:k,lat:+(base[0]+(rnd()-.5)*.03).toFixed(4),lon:+(base[1]+(rnd()-.5)*.03).toFixed(4),ph:+(3.4+rnd()*2.6).toFixed(1),jenis:k.startsWith('Pok')?'Kolam':'Bedengan',tgl:'2026-10-20',contoh:true});}
+  store.set('pts',pts);drawMap();toast('Data CONTOH ditambahkan (bukan data lapangan)');};
+$('#pClear').onclick=()=>{if(!pts.length)return;pts=[];store.set('pts',pts);drawMap();};
+function drawMap(){const svg=$('#map');const W=600,H=380,pad=34;
+  const bg=`<defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef6ee"/><stop offset="1" stop-color="#e9f2f8"/></linearGradient><pattern id="pt" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#cfdccf"/></pattern></defs><rect width="600" height="380" fill="url(#lg)"/><rect width="600" height="380" fill="url(#pt)"/><path d="M-10 250 C120 200 200 300 330 240 S520 170 610 210" stroke="#9fc9e6" stroke-width="10" fill="none" opacity=".7"/><text x="520" y="200" font-size="11" fill="#5d8fb3" font-weight="700">sungai (ilustrasi)</text>`;
+  if(!pts.length){svg.innerHTML=bg+'<text x="300" y="180" text-anchor="middle" fill="#74697a" font-size="15" font-weight="700">Belum ada titik</text><text x="300" y="202" text-anchor="middle" fill="#74697a" font-size="12">Simpan hasil uji atau isi data contoh</text>';$('#sum').innerHTML='';$('#tbl').innerHTML='';$('#mapNote').textContent='';return;}
+  let la=pts.map(p=>p.lat),lo=pts.map(p=>p.lon);let a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo);
+  const sp=Math.max(a1-a0,o1-o0,0.01);const cy=(a0+a1)/2,cxo=(o0+o1)/2;a0=cy-sp/2;a1=cy+sp/2;o0=cxo-sp/2*(W/H);o1=cxo+sp/2*(W/H);
+  const X=v=>pad+(v-o0)/(o1-o0)*(W-2*pad),Y=v=>H-pad-(v-a0)/(a1-a0)*(H-2*pad);
+  let g=bg+`<text x="${pad}" y="${H-10}" font-size="11" fill="#74697a">${fmt(o0,3)}° BT</text><text x="${W-pad}" y="${H-10}" font-size="11" fill="#74697a" text-anchor="end">${fmt(o1,3)}° BT</text>`;
+  pts.forEach(p=>{const x=X(p.lon),y=Y(p.lat),c=phColor(p.ph);
+    g+=p.jenis==='Kolam'?`<rect x="${x-14}" y="${y-14}" width="28" height="28" rx="5" fill="${c}" stroke="#fff" stroke-width="3"><title>${p.nama} · ${p.kel} · pH ${p.ph}</title></rect>`:`<circle cx="${x}" cy="${y}" r="15" fill="${c}" stroke="#fff" stroke-width="3"><title>${p.nama} · ${p.kel} · pH ${p.ph}</title></circle>`;
+    g+=`<text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="12" font-weight="800" fill="${p.ph>=4.75&&p.ph<6?'#3a2c10':'#fff'}" pointer-events="none">${fmt(p.ph,1)}</text>`;});
+  svg.innerHTML=g;
+  $('#mapNote').textContent=(pts.some(p=>p.contoh)?'Sebagian titik adalah DATA CONTOH. ':'')+'Angka di titik = pH. Ketuk titik untuk detail.';
+  const by={};pts.forEach(p=>{(by[p.kel]=by[p.kel]||[]).push(p);});
+  $('#sum').innerHTML='<h3 style="margin-top:16px"><span class="dot"></span>Ringkasan per kelompok</h3><div class="groups">'+Object.keys(by).map(k=>{const a=by[k],m=a.reduce((s,p)=>s+p.ph,0)/a.length,low=a.filter(p=>p.ph<5).length;return`<div class="grp" style="background:linear-gradient(135deg,${phColor(m)},${phColor(m)}cc);color:${m>=4.75&&m<6?'#3a2c10':'#fff'}"><span>${k}</span><b>pH ${fmt(m,1)}</b><span>${a.length} titik · ${low} di bawah pH 5</span></div>`;}).join('')+'</div>';
+  $('#tbl').innerHTML='<table><tr><th>Tgl</th><th>Nama</th><th>Kelompok</th><th>pH</th></tr>'+pts.map(p=>`<tr><td>${p.tgl.slice(5)}</td><td>${p.nama}${p.contoh?'<span class="tag">contoh</span>':''}</td><td>${p.kel}</td><td><span class="ph-chip" style="background:${phColor(p.ph)}">${fmt(p.ph,1)}</span></td></tr>`).join('')+'</table>';}
+function copy(t){try{navigator.clipboard.writeText(t).then(()=>toast('Disalin'),()=>toast('Salin gagal; pilih teks manual'));}catch(e){toast('Salin tidak didukung');}}
+$('#copyCsv').onclick=()=>copy('tanggal,nama,kelompok,jenis,lintang,bujur,pH,contoh\n'+pts.map(p=>[p.tgl,p.nama,p.kel,p.jenis,p.lat,p.lon,p.ph,p.contoh].join(',')).join('\n'));
+$('#copyRep').onclick=()=>{const by={};pts.forEach(p=>{(by[p.kel]=by[p.kel]||[]).push(p);});
+  copy('Ringkasan uji pH Eggshell Reuse\n'+Object.keys(by).map(k=>{const a=by[k],m=a.reduce((s,p)=>s+p.ph,0)/a.length;return`- ${k}: ${a.length} titik, rata-rata pH ${fmt(m,1)}, ${a.filter(p=>p.ph<5).length} titik di bawah pH 5`;}).join('\n')+(pts.some(p=>p.contoh)?'\n(termasuk data contoh)':''));};
+
+/* GPS */
+$('#pGps').onclick=()=>{if(!('geolocation' in navigator)){toast('GPS tidak tersedia di perangkat ini');return;}
+  toast('Mencari lokasi…');navigator.geolocation.getCurrentPosition(pos=>{$('#pLat').value=pos.coords.latitude.toFixed(5);$('#pLon').value=pos.coords.longitude.toFixed(5);toast('Lokasi terisi (±'+Math.round(pos.coords.accuracy)+' m)');},
+  err=>toast(err.code===1?'Izin lokasi ditolak; isi manual':'Lokasi belum didapat; coba di tempat terbuka'),{enableHighAccuracy:true,timeout:15000});};
+
+/* status online/offline */
+function net(){const on=navigator.onLine;$('#net').innerHTML=`<span class="netdot${on?'':' off'}"></span>${on?'Online':'Offline — aplikasi tetap bisa dipakai'}`;}
+addEventListener('online',net);addEventListener('offline',net);net();
+
+/* pasang aplikasi (PWA) */
+let deferred=null;const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+let dismissed=store.get('installX',false);
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;if(!standalone&&!dismissed)$('#install').classList.add('on');});
+if(isIOS&&!standalone&&!dismissed){$('#installTxt').textContent='Di Safari: ketuk tombol Bagikan lalu "Tambah ke Layar Utama".';$('#installBtn').style.display='none';$('#install').classList.add('on');}
+$('#installBtn').onclick=async()=>{if(!deferred){toast('Buka menu browser → "Instal aplikasi" / "Tambahkan ke layar utama"');return;}deferred.prompt();const r=await deferred.userChoice;deferred=null;$('#install').classList.remove('on');if(r.outcome==='accepted')toast('Aplikasi dipasang');};
+$('#installX').onclick=()=>{$('#install').classList.remove('on');store.set('installX',true);};
+addEventListener('appinstalled',()=>{$('#install').classList.remove('on');toast('Asisten Dosis terpasang di HP');});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+drawMap();
+})();
+</script>
+</body>
+</html>
